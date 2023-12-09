@@ -5,8 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <SlrLib/Types/Types.hpp>
-
+#include "Types.hpp"
 #include "Misc.hpp"
 #include "CharacterSet.hpp"
 #include "PredictionSet.hpp"
@@ -22,14 +21,30 @@ public:
 		return instance;
 	}
 
-	void TrainWithSample(const std::string& _text, const char _nextCharacter)
+	void TrainWithSample(const std::string& _text)
 	{
 		std::string sample = _text;
-
-		while (sample.size() > 0)
+		size totalSize = sample.size();
+		size loops = 0;
+		
+		while (sample.size() > 1)
 		{
-			predictionState.GetPredictionForSequence(StringToSequence(sample)).IncrementOccurrencesFor(characterSet[_nextCharacter]);
-			sample.erase(0, 1);
+			std::cout << "Estimated Progress: " << (double(loops) / double(totalSize)) * 100 << "%" << std::endl;
+
+			const char nextCharacter = sample.back();
+
+			std::string leftTrain = sample.substr(0, sample.size() - 1);
+			std::string rightTrain = sample.substr(1, sample.size() - 2);
+
+			predictionState.GetPredictionForSequence(StringToSequence(leftTrain)).IncrementOccurrencesFor(characterSet[nextCharacter]);
+
+			while (rightTrain.size() > 0)
+			{
+				predictionState.GetPredictionForSequence(StringToSequence(rightTrain)).IncrementOccurrencesFor(characterSet[nextCharacter]);
+				rightTrain = rightTrain.substr(1, rightTrain.size() - 1);
+			}
+
+			sample.pop_back();
 		}
 	}
 

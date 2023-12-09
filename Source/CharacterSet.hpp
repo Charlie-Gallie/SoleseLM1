@@ -7,9 +7,9 @@
 #include <unordered_map>
 #include <vector>
 #include <cmath>
+#include <functional>
 
-#include <SlrLib/Types/Types.hpp>
-
+#include "Types.hpp"
 #include "Misc.hpp"
 
 SLM1_NAMESPACE_BEGIN
@@ -30,6 +30,8 @@ public:
 		for (const char character : _text)
 		{
 			characterSet[character] = currentCharacterIndex;
+			characterSetReverseLookup[currentCharacterIndex] = character;
+
 			++currentCharacterIndex;
 		}
 	}
@@ -46,21 +48,14 @@ public:
 
 	char GetByValue(const u32 _value)
 	{
-		auto it = std::find_if(
-			std::begin(characterSet),
-			std::end(characterSet),
-			[_value](auto&& setIterator)
-			{
-				return setIterator.second == _value;
-			}
-		);
-
-		if (it == std::end(characterSet))
+		try
+		{
+			return characterSetReverseLookup.at(_value);
+		}
+		catch (...)
 		{
 			return '#';
 		}
-
-		return it->first;
 	}
 
 	size GetSize() const
@@ -76,6 +71,7 @@ private:
 	u32 currentCharacterIndex = 0;
 
 	std::unordered_map<char, u32> characterSet;
+	std::unordered_map<u32, char> characterSetReverseLookup;
 };
 
 class Sequence
@@ -99,6 +95,7 @@ public:
 	std::string ToString() const
 	{
 		std::string result;
+		result.reserve(values.size());
 
 		for (const u32 value : values)
 		{
@@ -110,6 +107,7 @@ public:
 
 	size GetHash() const
 	{
+		/*
 		const size primes[10] = {
 			99546989,
 			24833777,
@@ -145,15 +143,21 @@ public:
 		}
 
 		return result;
+		*/
+
+		std::string value = ToString();
+
+		return (size)std::hash<std::string>{}(value);
 	}
 
 	Sequence GetSubSequence(const size _firstIndex, const size _lastIndex) const
 	{
 		Sequence result;
+		result.values.resize(_lastIndex - _firstIndex);
 
 		for (size index = _firstIndex; index < _lastIndex; ++index)
 		{
-			result.AppendByValue(values[index]);
+			result.values[index - _firstIndex] = values[index];
 		}
 
 		return result;

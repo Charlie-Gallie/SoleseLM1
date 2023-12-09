@@ -115,26 +115,23 @@ TrainingRoot
 	size amountOfSets = std::distance(std::filesystem::directory_iterator(root), {});
 	size counter = 1;
 
-	for (const auto& set : std::filesystem::directory_iterator(root))
+	for (const auto& sample : std::filesystem::directory_iterator(root))
 	{
-		std::cout << "Training with set " << counter << " of " << amountOfSets << std::endl;
+		std::cout << "Training with sample " << counter << " of " << amountOfSets << " - " << sample.path().filename() << std::endl;
 		++counter;
 
-		for (const auto& sample : std::filesystem::directory_iterator(set.path()))
+		std::ifstream trainingFile(sample.path(), std::ios_base::binary);
+
+		std::string trainingString = "";
+
+		while (!trainingFile.eof())
 		{
-			std::ifstream trainingFile(sample.path(), std::ios_base::binary);
-
-			std::string trainingString = "";
-
-			while (!trainingFile.eof())
-			{
-				std::string buffer;
-				std::getline(trainingFile, buffer);
-				trainingString += buffer;
-			}
-
-			slm1.TrainWithSample(trainingString.substr(0, trainingString.size() - 1), trainingString.back());
+			std::string buffer;
+			std::getline(trainingFile, buffer);
+			trainingString += buffer;
 		}
+
+		slm1.TrainWithSample(trainingString);
 
 		std::vector<byte> data = slm1.ExportModel();
 		for (byte b : data)
@@ -152,7 +149,7 @@ TrainingRoot
 
 int main()
 {
-	characterSet.LoadToSet("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ,.!?\"'(){}[]:-=_+\\/\n\r");
+	characterSet.LoadToSet("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ,.!?\"'(){}[]:;-=_+\\/\n\r");
 
 	std::cout << title << std::endl;
 

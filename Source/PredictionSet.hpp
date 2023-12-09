@@ -52,6 +52,33 @@ public:
 		}
 	}
 
+	void DecrementOccurrencesFor(const u32 _value)
+	{
+		CharacterInstance& incrementFor = likelihood[_value];
+
+		incrementFor.value = _value;
+
+		if (incrementFor.occurrences == 0)
+		{
+			return;
+		}
+
+		incrementFor.occurrences -= 1;
+
+		size currentTotalOccurences = 0;
+
+		for (const std::pair<u32, CharacterInstance>& characterLikelihood : likelihood)
+		{
+			currentTotalOccurences += characterLikelihood.second.occurrences;
+		}
+
+		for (const std::pair<u32, CharacterInstance>& characterLikelihood : likelihood)
+		{
+			CharacterInstance& currentInstance = likelihood[characterLikelihood.second.value];
+			currentInstance.likelihood = double(currentInstance.occurrences) / double(currentTotalOccurences);
+		}
+	}
+
 	PredictionSet& operator=(const PredictionSet& _other)
 	{
 		this->likelihood = _other.likelihood;
