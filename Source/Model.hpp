@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "Types.hpp"
 #include "Misc.hpp"
@@ -30,14 +31,14 @@ public:
 		while (sample.size() > 1)
 		{
 			std::cout << "Estimated Progress: " << (double(loops) / double(totalSize)) * 100 << "%" << std::endl;
+			++loops;
 
 			const char nextCharacter = sample.back();
 
 			std::string leftTrain = sample.substr(0, sample.size() - 1);
-			std::string rightTrain = sample.substr(1, sample.size() - 2);
-
 			predictionState.GetPredictionForSequence(StringToSequence(leftTrain)).IncrementOccurrencesFor(characterSet[nextCharacter]);
 
+			std::string rightTrain = sample.substr(1, sample.size() - 2);
 			while (rightTrain.size() > 0)
 			{
 				predictionState.GetPredictionForSequence(StringToSequence(rightTrain)).IncrementOccurrencesFor(characterSet[nextCharacter]);
